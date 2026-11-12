@@ -187,3 +187,22 @@ $ curl --silent example.com | htmlq 'body' | bat --language html
 ```
 
 > <img alt="Syntax highlighted output" width="700" src="https://user-images.githubusercontent.com/2346707/132808980-db8991ff-9177-4cb7-a018-39ad94282374.png" />
+
+## Output files and exit status
+
+When writing to a file with `--output`, extraction is transactional:
+
+1. The input is read and parsed, the base URL and every CSS selector
+   (including each `--remove-nodes` selector) are validated, and the result is
+   rendered in full, all before the destination file is touched.
+2. The result is written to a temporary file in the same directory as the
+   destination, then atomically renamed into place.
+3. If anything fails — unreadable input, malformed selector, invalid base URL,
+   or a disk/write error — `htmlq` prints an error to stderr, exits with status
+   `1`, and leaves any existing output file's bytes unchanged. No temporary
+   files are left behind.
+
+A selector that matches nothing is not an error: the run succeeds with empty
+output, both on stdout and when writing to a file. Write errors on stdout,
+including a broken downstream pipe, are also reported with a non-zero exit
+status instead of being silently ignored.

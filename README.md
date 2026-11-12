@@ -88,7 +88,7 @@ $ curl --silent https://www.rust-lang.org/ | htmlq '#get-help'
 ### Find all the links in a page
 
 ```console
-$ curl --silent https://www.rust-lang.org/ | htmlq --attribute href a
+$ curl --silent https://www.rust-lang.org/ | htmlq --attributes href a
 /
 /tools/install
 /learn
@@ -179,6 +179,23 @@ $ curl --silent https://mgdm.net | htmlq --pretty '#posts'
     </li>
 [...]
 ```
+
+### Atomic output and exit codes
+
+When writing to a file with `--output`, htmlq validates the input, `--base`
+URL and every CSS selector first, then renders the whole result into memory,
+writes it to a temporary file in the same directory as the destination and
+atomically renames it into place. If anything fails — an unreadable input,
+an invalid base URL, a malformed selector or a write error — the destination
+file is never created or truncated and keeps its original bytes. No
+temporary files are left behind.
+
+Exit codes are stable so they can be used in shell pipelines:
+
+- `0`: at least one element matched and the full output was written,
+- `1`: a runtime failure (bad input, invalid `--base`, malformed selector,
+  no matching elements, output write failure including a broken pipe),
+- `2`: a command-line usage error (reported by the argument parser).
 
 ### Syntax highlighting with [`bat`](https://github.com/sharkdp/bat)
 
